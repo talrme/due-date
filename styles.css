@@ -764,9 +764,12 @@ main {
 }
 
 .table-wrapper {
-    overflow-x: auto;
+    position: relative;
+    max-height: min(620px, 72vh);
+    overflow: auto;
     border: 1px solid #e0e8ed;
     border-radius: 8px;
+    scrollbar-gutter: stable;
 }
 
 table {
@@ -785,8 +788,12 @@ td {
 }
 
 th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
     color: var(--muted);
     background: #f7fafb;
+    box-shadow: 0 1px 0 #dfe8ee, 0 8px 14px rgba(20, 33, 61, 0.05);
     font-size: 0.75rem;
     text-transform: uppercase;
 }
