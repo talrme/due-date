@@ -650,8 +650,8 @@ function renderTimingSummary(rows) {
                 </div>
                 <div class="metric-list">
                     ${summaryRow("Average", item.averageDay, `${item.averageDay.toFixed(1)} days`)}
-                    ${summaryRow("Median", medianDay, "50% born by then")}
-                    ${summaryRow(`${SUMMARY_PERCENTILE}% by`, summaryPercentileDay, `${SUMMARY_PERCENTILE}% born by then`)}
+                    ${summaryRow("Median", medianDay, `50% born by ${medianDay.toFixed(1)} days`)}
+                    ${summaryRow(`${SUMMARY_PERCENTILE}% by`, summaryPercentileDay, `${SUMMARY_PERCENTILE}% born by ${summaryPercentileDay.toFixed(1)} days`)}
                 </div>
             </article>
         `;
