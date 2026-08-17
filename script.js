@@ -296,6 +296,41 @@ function percentileDayFor(rows, cdfKey, percentile) {
     return previous.day + progress * (current.day - previous.day);
 }
 
+function referenceMarkersFor(rows) {
+    return [
+        settings.showMedian && settings.showFirst
+            ? {
+                type: "median-first",
+                className: "median-marker median-first",
+                day: medianDayFor(rows, "firstCdf"),
+                label: "Median first baby",
+                shortLabel: "Median first",
+                detail: "50% born by then"
+            }
+            : null,
+        settings.showMedian && settings.showLater
+            ? {
+                type: "median-later",
+                className: "median-marker median-later",
+                day: medianDayFor(rows, "laterCdf"),
+                label: "Median second or later",
+                shortLabel: "Median second+",
+                detail: "50% born by then"
+            }
+            : null,
+        settings.showDueDate
+            ? {
+                type: "due-date",
+                className: "due-date-marker",
+                day: 280,
+                label: "Due date",
+                shortLabel: "Due date",
+                detail: "40 weeks"
+            }
+            : null
+    ].filter(Boolean);
+}
+
 function renderChart(rows) {
     const width = 1100;
     const height = 500;
@@ -341,7 +376,7 @@ function renderChart(rows) {
             return age.week === week && age.day === 0;
         });
         if (weekStartIndex < 0) continue;
-        weekLabels.push(`<text class="week-label" x="${xFor(weekStartIndex)}" y="${height - 26}" text-anchor="middle">${week} weeks</text>`);
+        weekLabels.push(`<text class="week-label" x="${xFor(weekStartIndex)}" y="${height - 26}" text-anchor="start">${week} weeks</text>`);
     }
 
     const dayLabels = rows.map((row, index) => {
@@ -374,17 +409,15 @@ function renderChart(rows) {
         `
         : "";
 
-    const referenceMarkers = [
-        settings.showMedian && settings.showFirst
-            ? { className: "median-marker median-first", day: medianDayFor(rows, "firstCdf"), label: "Median first", labelY: margin.top + 18 }
-            : null,
-        settings.showMedian && settings.showLater
-            ? { className: "median-marker median-later", day: medianDayFor(rows, "laterCdf"), label: "Median second+", labelY: margin.top + 38 }
-            : null,
-        settings.showDueDate
-            ? { className: "due-date-marker", day: 280, label: "Due date", labelY: margin.top + 58 }
-            : null
-    ].filter(Boolean);
+    const labelRowsByType = {
+        "due-date": margin.top + 18,
+        "median-first": margin.top + 38,
+        "median-later": margin.top + 58
+    };
+    const referenceMarkers = referenceMarkersFor(rows).map((marker) => ({
+        ...marker,
+        labelY: labelRowsByType[marker.type] || margin.top + 18
+    }));
 
     const markerLines = referenceMarkers.map((marker) => {
         const x = xForDay(marker.day);
@@ -393,7 +426,7 @@ function renderChart(rows) {
 
     const markerLabels = referenceMarkers.map((marker) => {
         const x = xForDay(marker.day);
-        return `<text class="reference-label ${marker.className}" x="${x + 7}" y="${marker.labelY}">${marker.label}</text>`;
+        return `<text class="reference-label ${marker.className}" x="${x + 7}" y="${marker.labelY}">${marker.shortLabel}</text>`;
     }).join("");
 
     const points = rows.map((row, index) => {
@@ -437,13 +470,13 @@ function renderChart(rows) {
     chartEl.querySelectorAll(".hit-zone").forEach((zone) => {
         const day = Number(zone.dataset.day);
         const row = rows.find((item) => item.day === day);
-        zone.addEventListener("mouseenter", (event) => showTooltip(row, event));
-        zone.addEventListener("mousemove", (event) => showTooltip(row, event));
+        zone.addEventListener("mouseenter", (event) => showTooltip(row, rows, event));
+        zone.addEventListener("mousemove", (event) => showTooltip(row, rows, event));
         zone.addEventListener("mouseleave", hideTooltip);
         zone.addEventListener("click", (event) => {
             selectedDay = day;
             renderChart(rows);
-            showTooltip(row, event, true);
+            showTooltip(row, rows, event, true);
         });
     });
 
@@ -455,7 +488,34 @@ function renderChart(rows) {
     });
 }
 
-function showTooltip(row, event, persist = false) {
+function markerTooltipHtml(row, rows) {
+    const dueDate = parseISODate(settings.dueDate);
+    const nearbyMarkers = referenceMarkersFor(rows)
+        .map((marker) => ({ ...marker, distance: Math.abs(row.day - marker.day) }))
+        .filter((marker) => marker.distance <= 1.1)
+        .sort((a, b) => a.distance - b.distance);
+
+    if (!nearbyMarkers.length) return "";
+
+    const markerItems = nearbyMarkers.map((marker) => {
+        const roundedDay = Math.round(marker.day);
+        return `
+            <div class="tooltip-marker ${marker.type}">
+                <strong>${marker.label}</strong>
+                <small>${formatTableDate(dateForGestationalDay(dueDate, marker.day))} · ${gestationalLabel(roundedDay)} · ${marker.detail}</small>
+            </div>
+        `;
+    }).join("");
+
+    return `
+        <div class="tooltip-markers">
+            <span>${nearbyMarkers.length === 1 ? "Nearby marker" : "Nearby markers"}</span>
+            ${markerItems}
+        </div>
+    `;
+}
+
+function showTooltip(row, rows, event, persist = false) {
     const firstHtml = settings.showFirst ? `
         <div><span>First baby</span><strong>${row.firstCdf.toFixed(1)}%</strong></div>
     ` : "";
@@ -473,6 +533,7 @@ function showTooltip(row, event, persist = false) {
             ${firstHtml}
             ${laterHtml}
         </div>
+        ${markerTooltipHtml(row, rows)}
     `;
 
     tooltipEl.classList.add("is-visible");
