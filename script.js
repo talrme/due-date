@@ -50,7 +50,9 @@ const DEFAULT_SETTINGS = {
     showPdf: true,
     showCdf: true,
     showTable: true,
-    smoothLines: true
+    smoothLines: true,
+    showMedian: true,
+    showDueDate: true
 };
 
 const chartEl = document.getElementById("chart");
@@ -63,6 +65,8 @@ const settingsModal = document.getElementById("settings-modal");
 const rememberDueDateToggle = document.getElementById("remember-due-date");
 const showTableToggle = document.getElementById("show-table");
 const smoothLinesToggle = document.getElementById("smooth-lines");
+const showMedianToggle = document.getElementById("show-median");
+const showDueDateToggle = document.getElementById("show-due-date");
 
 let settings = loadSettings();
 let selectedDay = null;
@@ -188,6 +192,8 @@ function syncControls() {
     rememberDueDateToggle.checked = settings.rememberDueDate;
     showTableToggle.checked = settings.showTable;
     smoothLinesToggle.checked = settings.smoothLines;
+    showMedianToggle.checked = settings.showMedian;
+    showDueDateToggle.checked = settings.showDueDate;
 
     document.querySelectorAll("[data-series]").forEach((button) => {
         const key = button.dataset.series === "first" ? "showFirst" : "showLater";
@@ -272,6 +278,22 @@ function pathFor(points, smooth) {
     }, `M ${points[0].x} ${points[0].y}`);
 }
 
+function medianDayFor(rows, cdfKey) {
+    const median = 50;
+    const current = rows.find((row) => row[cdfKey] >= median);
+    if (!current) return rows[rows.length - 1].day;
+    const currentIndex = rows.indexOf(current);
+    if (currentIndex === 0) return current.day;
+
+    const previous = rows[currentIndex - 1];
+    const previousValue = previous[cdfKey];
+    const currentValue = current[cdfKey];
+    if (currentValue === previousValue) return current.day;
+
+    const progress = (median - previousValue) / (currentValue - previousValue);
+    return previous.day + progress * (current.day - previous.day);
+}
+
 function renderChart(rows) {
     const width = 1100;
     const height = 500;
@@ -287,6 +309,12 @@ function renderChart(rows) {
 
     function xFor(index) {
         return margin.left + index * step;
+    }
+
+    function xForDay(day) {
+        const firstDay = rows[0].day;
+        const lastDay = rows[rows.length - 1].day;
+        return margin.left + (day - firstDay) / (lastDay - firstDay) * plotWidth;
     }
 
     const gridMax = settings.showPdf ? maxPdf : maxCdf;
@@ -344,6 +372,28 @@ function renderChart(rows) {
         `
         : "";
 
+    const referenceMarkers = [
+        settings.showMedian && settings.showFirst
+            ? { className: "median-marker median-first", day: medianDayFor(rows, "firstCdf"), label: "Median first", labelY: margin.top + 18 }
+            : null,
+        settings.showMedian && settings.showLater
+            ? { className: "median-marker median-later", day: medianDayFor(rows, "laterCdf"), label: "Median second+", labelY: margin.top + 38 }
+            : null,
+        settings.showDueDate
+            ? { className: "due-date-marker", day: 280, label: "Due date", labelY: margin.top + 58 }
+            : null
+    ].filter(Boolean);
+
+    const markerLines = referenceMarkers.map((marker) => {
+        const x = xForDay(marker.day);
+        return `<line class="reference-line ${marker.className}" x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}"></line>`;
+    }).join("");
+
+    const markerLabels = referenceMarkers.map((marker) => {
+        const x = xForDay(marker.day);
+        return `<text class="reference-label ${marker.className}" x="${x + 7}" y="${marker.labelY}">${marker.label}</text>`;
+    }).join("");
+
     const points = rows.map((row, index) => {
         const x = xFor(index);
         return `
@@ -370,10 +420,12 @@ function renderChart(rows) {
             ${settings.showPdf && settings.showCdf ? `<line class="axis-line" x1="${width - margin.right}" y1="${margin.top}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>` : ""}
             <text class="y-label" x="${margin.left}" y="18">${settings.showPdf ? "daily chance" : "born by date"}</text>
             ${settings.showPdf && settings.showCdf ? `<text class="y-label" x="${width - margin.right}" y="18" text-anchor="end">born by date</text>` : ""}
+            ${markerLines}
             ${bars}
             ${cdfLines}
             ${points}
             ${focus}
+            ${markerLabels}
             ${dayLabels}
             ${weekLabels.join("")}
             ${hitZones}
@@ -521,6 +573,8 @@ function setupEvents() {
     });
     showTableToggle.addEventListener("change", () => updateSetting("showTable", showTableToggle.checked));
     smoothLinesToggle.addEventListener("change", () => updateSetting("smoothLines", smoothLinesToggle.checked));
+    showMedianToggle.addEventListener("change", () => updateSetting("showMedian", showMedianToggle.checked));
+    showDueDateToggle.addEventListener("change", () => updateSetting("showDueDate", showDueDateToggle.checked));
     document.getElementById("clear-memory").addEventListener("click", resetAll);
     document.getElementById("reset-banner").addEventListener("click", resetAll);
     document.addEventListener("click", (event) => {

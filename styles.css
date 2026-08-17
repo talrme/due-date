@@ -404,6 +404,54 @@ main {
     stroke-width: 3;
 }
 
+.reference-line {
+    pointer-events: none;
+    opacity: 0.86;
+}
+
+.reference-line.median-marker {
+    stroke-width: 2.4;
+    stroke-dasharray: 3 7;
+    stroke-linecap: round;
+}
+
+.reference-line.median-first {
+    stroke: var(--blue);
+}
+
+.reference-line.median-later {
+    stroke: var(--coral);
+}
+
+.reference-line.due-date-marker {
+    stroke: var(--navy);
+    stroke-width: 2.2;
+    opacity: 0.68;
+}
+
+.reference-label {
+    pointer-events: none;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    paint-order: stroke;
+    stroke: rgba(255, 255, 255, 0.9);
+    stroke-linejoin: round;
+    stroke-width: 4px;
+}
+
+.reference-label.median-first {
+    fill: var(--blue);
+}
+
+.reference-label.median-later {
+    fill: #c8553d;
+}
+
+.reference-label.due-date-marker {
+    fill: var(--navy);
+}
+
 .focus-line {
     stroke: rgba(20, 33, 61, 0.24);
     stroke-width: 1;
