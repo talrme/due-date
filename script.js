@@ -151,6 +151,13 @@ function gestationalLabel(day) {
     return `${age.week}w ${age.day}d`;
 }
 
+function gestationalLongLabel(day) {
+    const age = gestationalAge(day);
+    const weekLabel = age.week === 1 ? "week" : "weeks";
+    const dayLabel = age.day === 1 ? "day" : "days";
+    return `${age.week} ${weekLabel}, ${age.day} ${dayLabel}`;
+}
+
 function enrichData() {
     const dueDate = parseISODate(settings.dueDate);
     const firstTotal = SOURCE_DATA.reduce((sum, row) => sum + row.first, 0);
@@ -168,6 +175,7 @@ function enrichData() {
             dateLabel: formatDate(deliveryDate),
             tableDateLabel: formatTableDate(deliveryDate),
             gestationalLabel: gestationalLabel(row.day),
+            gestationalLongLabel: gestationalLongLabel(row.day),
             firstCdf: firstRunning / firstTotal * 100,
             laterCdf: laterRunning / laterTotal * 100
         };
@@ -215,16 +223,53 @@ function yFor(value, max, top, height) {
 
 function pathFor(points, smooth) {
     if (!points.length) return "";
-    if (!smooth) {
+    if (!smooth || points.length < 3) {
         return points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
     }
 
-    return points.reduce((path, point, index, array) => {
-        if (index === 0) return `M ${point.x} ${point.y}`;
-        const previous = array[index - 1];
-        const midX = (previous.x + point.x) / 2;
-        return `${path} C ${midX} ${previous.y}, ${midX} ${point.y}, ${point.x} ${point.y}`;
-    }, "");
+    const slopes = points.slice(0, -1).map((point, index) => {
+        const next = points[index + 1];
+        return (next.y - point.y) / (next.x - point.x);
+    });
+    const tangents = points.map((point, index) => {
+        if (index === 0) return slopes[0];
+        if (index === points.length - 1) return slopes[slopes.length - 1];
+        const previousSlope = slopes[index - 1];
+        const nextSlope = slopes[index];
+        if (previousSlope * nextSlope <= 0) return 0;
+        return (previousSlope + nextSlope) / 2;
+    });
+
+    slopes.forEach((slope, index) => {
+        if (slope === 0) {
+            tangents[index] = 0;
+            tangents[index + 1] = 0;
+            return;
+        }
+
+        const firstRatio = tangents[index] / slope;
+        const nextRatio = tangents[index + 1] / slope;
+        const magnitude = Math.hypot(firstRatio, nextRatio);
+        if (magnitude > 3) {
+            const scale = 3 / magnitude;
+            tangents[index] = scale * firstRatio * slope;
+            tangents[index + 1] = scale * nextRatio * slope;
+        }
+    });
+
+    return points.slice(0, -1).reduce((path, point, index) => {
+        const next = points[index + 1];
+        const dx = next.x - point.x;
+        const controlOne = {
+            x: point.x + dx / 3,
+            y: point.y + tangents[index] * dx / 3
+        };
+        const controlTwo = {
+            x: next.x - dx / 3,
+            y: next.y - tangents[index + 1] * dx / 3
+        };
+        return `${path} C ${controlOne.x} ${controlOne.y}, ${controlTwo.x} ${controlTwo.y}, ${next.x} ${next.y}`;
+    }, `M ${points[0].x} ${points[0].y}`);
 }
 
 function renderChart(rows) {
@@ -261,12 +306,12 @@ function renderChart(rows) {
 
     const weekLabels = [];
     for (let week = 37; week <= 42; week += 1) {
-        const weekRows = rows.filter((row) => gestationalAge(row.day).week === week);
-        if (!weekRows.length) continue;
-        const firstIndex = rows.indexOf(weekRows[0]);
-        const lastIndex = rows.indexOf(weekRows[weekRows.length - 1]);
-        const center = (xFor(firstIndex) + xFor(lastIndex)) / 2;
-        weekLabels.push(`<text class="week-label" x="${center}" y="${height - 26}" text-anchor="middle">${week} weeks</text>`);
+        const weekStartIndex = rows.findIndex((row) => {
+            const age = gestationalAge(row.day);
+            return age.week === week && age.day === 0;
+        });
+        if (weekStartIndex < 0) continue;
+        weekLabels.push(`<text class="week-label" x="${xFor(weekStartIndex)}" y="${height - 26}" text-anchor="middle">${week} weeks</text>`);
     }
 
     const dayLabels = rows.map((row, index) => {
@@ -358,16 +403,18 @@ function renderChart(rows) {
 
 function showTooltip(row, event, persist = false) {
     const firstHtml = settings.showFirst ? `
-        <div><span>1st daily</span>${row.first.toFixed(1)}%</div>
-        <div><span>1st by then</span>${row.firstCdf.toFixed(1)}%</div>
+        <div><span>First baby</span><strong>${row.firstCdf.toFixed(1)}%</strong></div>
     ` : "";
     const laterHtml = settings.showLater ? `
-        <div><span>2nd+ daily</span>${row.later.toFixed(1)}%</div>
-        <div><span>2nd+ by then</span>${row.laterCdf.toFixed(1)}%</div>
+        <div><span>Second or later baby</span><strong>${row.laterCdf.toFixed(1)}%</strong></div>
     ` : "";
 
     tooltipEl.innerHTML = `
-        <div class="tooltip-title">${row.dateLabel} · ${row.gestationalLabel}</div>
+        <div class="tooltip-title">
+            <strong>${row.dateLabel}</strong>
+            <span>${row.gestationalLongLabel}</span>
+        </div>
+        <div class="tooltip-summary">Chance baby arrives on or before this date</div>
         <div class="tooltip-grid">
             ${firstHtml}
             ${laterHtml}
