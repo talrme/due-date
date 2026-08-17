@@ -315,9 +315,9 @@ function referenceMarkersFor(rows) {
                 type: "median-first",
                 className: "median-marker median-first",
                 day: medianDayFor(rows, "firstCdf"),
-                label: "Median first baby",
+                label: "Median for first baby",
                 shortLabel: "Median first",
-                detail: "50% born by then"
+                detail: "50% chance baby arrives on or before this date"
             }
             : null,
         settings.showMedian && settings.showLater
@@ -325,9 +325,9 @@ function referenceMarkersFor(rows) {
                 type: "median-later",
                 className: "median-marker median-later",
                 day: medianDayFor(rows, "laterCdf"),
-                label: "Median second or later",
+                label: "Median for second or later baby",
                 shortLabel: "Median second+",
-                detail: "50% born by then"
+                detail: "50% chance baby arrives on or before this date"
             }
             : null,
         settings.showDueDate
@@ -502,27 +502,21 @@ function renderChart(rows) {
 
 function markerTooltipHtml(row, rows) {
     const dueDate = parseISODate(settings.dueDate);
-    const nearbyMarkers = referenceMarkersFor(rows)
+    const closestMarker = referenceMarkersFor(rows)
         .map((marker) => ({ ...marker, distance: Math.abs(row.day - marker.day) }))
         .filter((marker) => marker.distance <= 1.1)
-        .sort((a, b) => a.distance - b.distance);
+        .sort((a, b) => a.distance - b.distance)[0];
 
-    if (!nearbyMarkers.length) return "";
+    if (!closestMarker) return "";
 
-    const markerItems = nearbyMarkers.map((marker) => {
-        const roundedDay = Math.round(marker.day);
-        return `
-            <div class="tooltip-marker ${marker.type}">
-                <strong>${marker.label}</strong>
-                <small>${formatTableDate(dateForGestationalDay(dueDate, marker.day))} · ${gestationalLabel(roundedDay)} · ${marker.detail}</small>
-            </div>
-        `;
-    }).join("");
+    const roundedDay = Math.round(closestMarker.day);
 
     return `
         <div class="tooltip-markers">
-            <span>${nearbyMarkers.length === 1 ? "Nearby marker" : "Nearby markers"}</span>
-            ${markerItems}
+            <div class="tooltip-marker ${closestMarker.type}">
+                <strong>${closestMarker.label}</strong>
+                <small>${formatTableDate(dateForGestationalDay(dueDate, closestMarker.day))} · ${gestationalLabel(roundedDay)} · ${closestMarker.detail}</small>
+            </div>
         </div>
     `;
 }
