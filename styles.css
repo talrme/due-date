@@ -486,6 +486,13 @@ main {
     stroke-width: 1.2;
 }
 
+.axis-title {
+    fill: var(--muted);
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: 0.02em;
+}
+
 .bar {
     opacity: 0.5;
     transition: opacity 0.16s ease, transform 0.16s ease;

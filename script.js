@@ -367,7 +367,7 @@ function referenceMarkersFor(rows) {
 function renderChart(rows) {
     const width = 1100;
     const height = 500;
-    const margin = { top: 34, right: 72, bottom: 86, left: 64 };
+    const margin = { top: 34, right: 96, bottom: 86, left: 32 };
     const plotWidth = width - margin.left - margin.right;
     const plotHeight = height - margin.top - margin.bottom;
     const step = plotWidth / (rows.length - 1);
@@ -387,20 +387,23 @@ function renderChart(rows) {
         return margin.left + (day - firstDay) / (lastDay - firstDay) * plotWidth;
     }
 
-    const gridMax = settings.showPdf ? maxPdf : maxCdf;
-    const gridTicks = settings.showPdf ? [0, 2, 4, 6, 8] : [0, 25, 50, 75, 100];
+    const gridMax = settings.showCdf ? maxCdf : maxPdf;
+    const gridTicks = settings.showCdf ? [0, 25, 50, 75, 100] : [0, 2, 4, 6, 8];
     const grid = gridTicks.map((tick) => {
         const y = yFor(tick, gridMax, margin.top, plotHeight);
         return `
             <line class="grid-line" x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}"></line>
-            <text class="y-label" x="${margin.left - 12}" y="${y + 4}" text-anchor="end">${tick}%</text>
         `;
     }).join("");
 
-    const rightAxis = settings.showPdf && settings.showCdf ? [0, 25, 50, 75, 100].map((tick) => {
+    const rightAxis = settings.showCdf ? [0, 25, 50, 75, 100].map((tick) => {
         const y = yFor(tick, maxCdf, margin.top, plotHeight);
         return `<text class="y-label" x="${width - margin.right + 12}" y="${y + 4}">${tick}%</text>`;
     }).join("") : "";
+
+    const rightAxisTitle = settings.showCdf
+        ? `<text class="axis-title" text-anchor="middle" transform="translate(${width - 22} ${margin.top + plotHeight / 2}) rotate(90)">Probability baby is born by date</text>`
+        : "";
 
     const weekLabels = [];
     for (let week = 37; week <= 42; week += 1) {
@@ -504,10 +507,8 @@ function renderChart(rows) {
             ${grid}
             ${rightAxis}
             <line class="axis-line" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
-            <line class="axis-line" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}"></line>
-            ${settings.showPdf && settings.showCdf ? `<line class="axis-line" x1="${width - margin.right}" y1="${margin.top}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>` : ""}
-            <text class="y-label" x="${margin.left}" y="18">${settings.showPdf ? "daily chance" : "born by date"}</text>
-            ${settings.showPdf && settings.showCdf ? `<text class="y-label" x="${width - margin.right}" y="18" text-anchor="end">born by date</text>` : ""}
+            ${settings.showCdf ? `<line class="axis-line" x1="${width - margin.right}" y1="${margin.top}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>` : ""}
+            ${rightAxisTitle}
             ${cdfLegend}
             ${markerLines}
             ${bars}
