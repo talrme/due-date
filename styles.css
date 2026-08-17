@@ -422,13 +422,13 @@ main {
 }
 
 .bar {
-    opacity: 0.72;
+    opacity: 0.5;
     transition: opacity 0.16s ease, transform 0.16s ease;
     transform-origin: bottom;
 }
 
 .bar:hover {
-    opacity: 1;
+    opacity: 0.74;
 }
 
 .line-path {
@@ -528,14 +528,14 @@ main {
     pointer-events: none;
 }
 
-.first-color {
-    fill: var(--teal);
-    stroke: var(--teal);
+.bar.first-color {
+    fill: rgba(42, 157, 143, 0.38);
+    stroke: rgba(42, 157, 143, 0.18);
 }
 
-.later-color {
-    fill: var(--coral);
-    stroke: var(--coral);
+.bar.later-color {
+    fill: rgba(231, 111, 81, 0.38);
+    stroke: rgba(231, 111, 81, 0.18);
 }
 
 .cdf-first {
@@ -614,6 +614,50 @@ main {
     display: block;
     margin-top: 2px;
     font-size: 1.08rem;
+}
+
+.tooltip-daily {
+    margin-top: 9px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.66);
+}
+
+.tooltip-daily > span {
+    display: block;
+    color: rgba(255, 255, 255, 0.54);
+    font-size: 0.66rem;
+    font-weight: 850;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.tooltip-daily-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.tooltip-daily-grid div {
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.tooltip-daily-grid span {
+    display: block;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 0.68rem;
+    font-weight: 750;
+}
+
+.tooltip-daily-grid strong {
+    display: block;
+    margin-top: 1px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-weight: 850;
 }
 
 .tooltip-markers {

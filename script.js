@@ -545,6 +545,21 @@ function showTooltip(row, rows, event, persist = false) {
     const laterHtml = settings.showLater ? `
         <div><span>Second or later baby</span><strong>${row.laterCdf.toFixed(1)}%</strong></div>
     ` : "";
+    const firstDailyHtml = settings.showPdf && settings.showFirst ? `
+        <div><span>First baby</span><strong>${row.first.toFixed(1)}%</strong></div>
+    ` : "";
+    const laterDailyHtml = settings.showPdf && settings.showLater ? `
+        <div><span>Second or later baby</span><strong>${row.later.toFixed(1)}%</strong></div>
+    ` : "";
+    const dailyHtml = firstDailyHtml || laterDailyHtml ? `
+        <div class="tooltip-daily">
+            <span>Daily chance on this date</span>
+            <div class="tooltip-daily-grid">
+                ${firstDailyHtml}
+                ${laterDailyHtml}
+            </div>
+        </div>
+    ` : "";
 
     tooltipEl.innerHTML = `
         <div class="tooltip-title">
@@ -556,6 +571,7 @@ function showTooltip(row, rows, event, persist = false) {
             ${firstHtml}
             ${laterHtml}
         </div>
+        ${dailyHtml}
         ${markerTooltipHtml(row, rows)}
     `;
 
