@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Due Date</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page-shell">
+        <header>
+            <button type="button" id="reset-banner" class="hero-banner" aria-label="Reset due date and browser settings">
+                <span class="hero-kicker">Epic Research birth timing</span>
+                <span class="hero-title">Due Date</span>
+                <span class="hero-copy">Explore when first and later babies tend to arrive, mapped onto your calendar.</span>
+            </button>
+        </header>
+
+        <main>
+            <section class="control-band" aria-label="Due date controls">
+                <div class="date-control">
+                    <label for="due-date-input">Due date</label>
+                    <input type="date" id="due-date-input">
+                </div>
+
+                <div class="quick-controls" aria-label="Display controls">
+                    <button type="button" class="toggle-chip active" data-series="first">First baby</button>
+                    <button type="button" class="toggle-chip active" data-series="later">Second+ baby</button>
+                    <button type="button" class="toggle-chip active" data-chart="pdf">Daily chance</button>
+                    <button type="button" class="toggle-chip active" data-chart="cdf">Born by date</button>
+                </div>
+
+                <button type="button" id="settings-button" class="settings-button" aria-label="Open settings" aria-haspopup="dialog" aria-controls="settings-modal">Settings</button>
+            </section>
+
+            <section class="insight-strip" aria-label="Summary">
+                <div>
+                    <span class="metric-label">Due date lands at</span>
+                    <strong id="due-date-summary">40w 0d</strong>
+                </div>
+                <div>
+                    <span class="metric-label">First baby average</span>
+                    <strong>275.9 days</strong>
+                </div>
+                <div>
+                    <span class="metric-label">Second+ average</span>
+                    <strong>274.5 days</strong>
+                </div>
+            </section>
+
+            <section class="chart-section" aria-label="Birth timing chart">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Interactive curve</p>
+                        <h2 id="chart-title">Daily chance and cumulative probability</h2>
+                    </div>
+                    <p id="chart-note">Hover or tap a day to see the date, daily probability, and chance baby arrives on or before that day.</p>
+                </div>
+                <div id="chart" class="chart" role="img" aria-label="Birth timing chart by gestational age"></div>
+                <div id="chart-tooltip" class="chart-tooltip" role="status" aria-live="polite"></div>
+            </section>
+
+            <section class="table-section" aria-label="Cumulative probability table">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Calendar table</p>
+                        <h2>Chance baby arrives by each date</h2>
+                    </div>
+                    <p>Percentages are cumulative from the rounded daily frequencies visible in the source image.</p>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Gestational age</th>
+                                <th>1st baby by then</th>
+                                <th>2nd+ baby by then</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cdf-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="source-section" aria-label="Research source">
+                <div>
+                    <p class="eyebrow">Source</p>
+                    <h2>Data Confirms Firstborns Take Their Time, Younger Siblings Born Sooner</h2>
+                    <p>This tool uses the gestational-age frequency table from the Epic Research study and maps those days onto your selected due date.</p>
+                    <p class="source-note">For curiosity and planning context only. It is not medical guidance, and the cumulative values are calculated from rounded table values.</p>
+                    <a href="https://www.epicresearch.org/articles/data-confirms-firstborns-take-their-time-younger-siblings-born-sooner/" target="_blank" rel="noopener noreferrer">Read the Epic Research article</a>
+                </div>
+                <details>
+                    <summary>View source table image</summary>
+                    <img src="assets/epic-research-gestational-age-table.png" alt="Epic Research gestational age frequency table for first and second or later deliveries">
+                </details>
+            </section>
+        </main>
+    </div>
+
+    <div id="settings-modal" class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" aria-hidden="true">
+        <div class="settings-panel">
+            <div class="settings-header">
+                <div>
+                    <p class="eyebrow">Due Date</p>
+                    <h2 id="settings-title">Settings</h2>
+                </div>
+                <button type="button" id="close-settings" class="close-button" aria-label="Close settings">×</button>
+            </div>
+            <div class="settings-body">
+                <section>
+                    <h3>Browser Memory</h3>
+                    <label class="switch-row" for="remember-due-date">
+                        <span>
+                            <strong>Remember due date</strong>
+                            <small>Save the selected due date on this browser.</small>
+                        </span>
+                        <input type="checkbox" id="remember-due-date">
+                        <span class="switch" aria-hidden="true"></span>
+                    </label>
+                    <button type="button" id="clear-memory" class="danger-button">Clear saved due date and settings</button>
+                </section>
+
+                <section>
+                    <h3>Display</h3>
+                    <label class="switch-row" for="show-table">
+                        <span>
+                            <strong>Show table</strong>
+                            <small>Keep the cumulative calendar table visible.</small>
+                        </span>
+                        <input type="checkbox" id="show-table">
+                        <span class="switch" aria-hidden="true"></span>
+                    </label>
+                    <label class="switch-row" for="smooth-lines">
+                        <span>
+                            <strong>Smooth curves</strong>
+                            <small>Use softer chart lines instead of straight joins.</small>
+                        </span>
+                        <input type="checkbox" id="smooth-lines">
+                        <span class="switch" aria-hidden="true"></span>
+                    </label>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
