@@ -23,13 +23,6 @@
                     <input type="date" id="due-date-input">
                 </div>
 
-                <div class="quick-controls" aria-label="Display controls">
-                    <button type="button" class="toggle-chip" data-series="first">First baby</button>
-                    <button type="button" class="toggle-chip active" data-series="later">Second+ baby</button>
-                    <button type="button" class="toggle-chip active" data-chart="pdf">Daily chance</button>
-                    <button type="button" class="toggle-chip active" data-chart="cdf">Born by date</button>
-                </div>
-
                 <button type="button" id="settings-button" class="settings-button" aria-label="Open settings" aria-haspopup="dialog" aria-controls="settings-modal">Settings</button>
             </section>
 
@@ -46,6 +39,19 @@
                 </div>
                 <div id="chart" class="chart" role="img" aria-label="Birth timing chart by gestational age"></div>
                 <div id="chart-tooltip" class="chart-tooltip" role="status" aria-live="polite"></div>
+                <div class="chart-options" aria-label="Chart display controls">
+                    <span class="chart-options-title">Show in chart</span>
+                    <div class="chart-option-group" aria-label="Baby data">
+                        <span>Data</span>
+                        <button type="button" class="toggle-chip" data-series="first">First baby</button>
+                        <button type="button" class="toggle-chip active" data-series="later">Second+ baby</button>
+                    </div>
+                    <div class="chart-option-group" aria-label="Chart measures">
+                        <span>Measures</span>
+                        <button type="button" class="toggle-chip active" data-chart="pdf">Daily chance</button>
+                        <button type="button" class="toggle-chip active" data-chart="cdf">Born by date</button>
+                    </div>
+                </div>
             </section>
 
             <section class="table-section" aria-label="Cumulative probability table">

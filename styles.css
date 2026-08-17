@@ -132,9 +132,10 @@ main {
 
 .control-band {
     display: grid;
-    grid-template-columns: minmax(220px, 280px) 1fr auto;
+    grid-template-columns: minmax(220px, 280px) auto;
     gap: 16px;
     align-items: end;
+    justify-content: space-between;
     padding: 18px;
 }
 
@@ -394,6 +395,53 @@ main {
     max-width: none;
     min-width: 1100px;
     height: 500px;
+}
+
+.chart-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(28, 49, 68, 0.09);
+    border-radius: 8px;
+    background: rgba(250, 252, 252, 0.78);
+}
+
+.chart-options-title,
+.chart-option-group > span {
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.chart-options-title {
+    padding-right: 2px;
+}
+
+.chart-option-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(28, 49, 68, 0.1);
+}
+
+.chart-option-group > span {
+    margin-right: 1px;
+}
+
+.chart-options .toggle-chip {
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: 0.84rem;
+    box-shadow: none;
 }
 
 .axis text,
@@ -1003,10 +1051,6 @@ body.modal-open {
         grid-template-columns: 1fr;
     }
 
-    .quick-controls {
-        grid-column: 1 / -1;
-    }
-
     .date-control {
         grid-column: 1 / -1;
     }
@@ -1042,6 +1086,20 @@ body.modal-open {
     .metric-row small {
         grid-column: 2;
         font-size: 0.72rem;
+    }
+
+    .chart-options {
+        width: 100%;
+    }
+
+    .chart-options-title {
+        width: 100%;
+    }
+
+    .chart-option-group {
+        width: 100%;
+        padding-left: 0;
+        border-left: 0;
     }
 
     .section-heading {
