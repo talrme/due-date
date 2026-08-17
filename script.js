@@ -441,6 +441,22 @@ function renderChart(rows) {
         return `<text class="reference-label ${marker.className}" x="${x + 7}" y="${marker.labelY}">${marker.shortLabel}</text>`;
     }).join("");
 
+    const cdfLegend = settings.showCdf
+        ? `
+            <g class="cdf-legend" transform="translate(${margin.left + 92} 10)">
+                <rect class="cdf-legend-bg" x="0" y="0" width="248" height="28" rx="14"></rect>
+                <g class="legend-item" transform="translate(12 14)">
+                    <line class="legend-line cdf-first" x1="0" y1="0" x2="24" y2="0"></line>
+                    <text class="legend-label" x="32" y="4">First baby</text>
+                </g>
+                <g class="legend-item" transform="translate(126 14)">
+                    <line class="legend-line cdf-later" x1="0" y1="0" x2="24" y2="0"></line>
+                    <text class="legend-label" x="32" y="4">Second+</text>
+                </g>
+            </g>
+        `
+        : "";
+
     const points = rows.map((row, index) => {
         const x = xFor(index);
         return `
@@ -467,6 +483,7 @@ function renderChart(rows) {
             ${settings.showPdf && settings.showCdf ? `<line class="axis-line" x1="${width - margin.right}" y1="${margin.top}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>` : ""}
             <text class="y-label" x="${margin.left}" y="18">${settings.showPdf ? "daily chance" : "born by date"}</text>
             ${settings.showPdf && settings.showCdf ? `<text class="y-label" x="${width - margin.right}" y="18" text-anchor="end">born by date</text>` : ""}
+            ${cdfLegend}
             ${markerLines}
             ${bars}
             ${cdfLines}
