@@ -772,17 +772,14 @@ main {
 
 .table-wrapper {
     position: relative;
-    max-height: min(620px, 72vh);
-    overflow: auto;
     border: 1px solid #e0e8ed;
     border-radius: 8px;
-    scrollbar-gutter: stable;
 }
 
 table {
     width: 100%;
-    min-width: 720px;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     background: #fff;
 }
 
@@ -794,10 +791,13 @@ td {
     font-size: 0.95rem;
 }
 
-th {
+thead {
     position: sticky;
     top: 0;
     z-index: 3;
+}
+
+th {
     color: var(--muted);
     background: #f7fafb;
     box-shadow: 0 1px 0 #dfe8ee, 0 8px 14px rgba(20, 33, 61, 0.05);
@@ -1147,6 +1147,18 @@ body.modal-open {
 
     .chart svg {
         height: 440px;
+    }
+
+    th,
+    td {
+        padding: 10px 8px;
+        font-size: 0.78rem;
+        line-height: 1.25;
+    }
+
+    th {
+        font-size: 0.6rem;
+        line-height: 1.25;
     }
 
     .settings-modal {
