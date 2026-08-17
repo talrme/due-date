@@ -712,12 +712,29 @@ function closeSettings() {
     document.getElementById("settings-button").focus();
 }
 
+function openDueDatePicker() {
+    dueDateInput.focus({ preventScroll: true });
+    if (typeof dueDateInput.showPicker !== "function") return;
+
+    try {
+        dueDateInput.showPicker();
+    } catch (error) {
+        // Some browsers only allow picker access for direct user gestures.
+    }
+}
+
 function setupEvents() {
     dueDateInput.addEventListener("change", () => {
         settings.dueDate = dueDateInput.value || DEFAULT_SETTINGS.dueDate;
         saveSettings();
         syncControls();
         render();
+    });
+
+    document.querySelector(".date-control").addEventListener("click", (event) => {
+        if (event.target === dueDateInput) return;
+        event.preventDefault();
+        openDueDatePicker();
     });
 
     document.querySelectorAll("[data-series]").forEach((button) => {

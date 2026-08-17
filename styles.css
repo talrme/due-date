@@ -142,6 +142,7 @@ main {
 .date-control {
     display: grid;
     gap: 7px;
+    cursor: pointer;
 }
 
 .date-control label {
@@ -159,6 +160,7 @@ main {
     border-radius: 8px;
     color: var(--ink);
     background: #fff;
+    cursor: pointer;
     font-weight: 750;
 }
 
