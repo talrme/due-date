@@ -58,7 +58,7 @@ const DEFAULT_SETTINGS = {
 const chartEl = document.getElementById("chart");
 const tooltipEl = document.getElementById("chart-tooltip");
 const dueDateInput = document.getElementById("due-date-input");
-const dueDateSummary = document.getElementById("due-date-summary");
+const timingSummaryEl = document.getElementById("timing-summary");
 const tableBody = document.getElementById("cdf-table-body");
 const tableSection = document.querySelector(".table-section");
 const settingsModal = document.getElementById("settings-modal");
@@ -188,7 +188,6 @@ function enrichData() {
 
 function syncControls() {
     dueDateInput.value = settings.dueDate;
-    dueDateSummary.textContent = `${formatTableDate(parseISODate(settings.dueDate))} at 40w 0d`;
     rememberDueDateToggle.checked = settings.rememberDueDate;
     showTableToggle.checked = settings.showTable;
     smoothLinesToggle.checked = settings.smoothLines;
@@ -279,8 +278,11 @@ function pathFor(points, smooth) {
 }
 
 function medianDayFor(rows, cdfKey) {
-    const median = 50;
-    const current = rows.find((row) => row[cdfKey] >= median);
+    return percentileDayFor(rows, cdfKey, 50);
+}
+
+function percentileDayFor(rows, cdfKey, percentile) {
+    const current = rows.find((row) => row[cdfKey] >= percentile);
     if (!current) return rows[rows.length - 1].day;
     const currentIndex = rows.indexOf(current);
     if (currentIndex === 0) return current.day;
@@ -290,7 +292,7 @@ function medianDayFor(rows, cdfKey) {
     const currentValue = current[cdfKey];
     if (currentValue === previousValue) return current.day;
 
-    const progress = (median - previousValue) / (currentValue - previousValue);
+    const progress = (percentile - previousValue) / (currentValue - previousValue);
     return previous.day + progress * (current.day - previous.day);
 }
 
@@ -500,6 +502,59 @@ function hideTooltip() {
     tooltipEl.classList.remove("is-visible");
 }
 
+function dateForGestationalDay(dueDate, day) {
+    return addDays(dueDate, Math.round(day) - 280);
+}
+
+function renderTimingSummary(rows) {
+    const dueDate = parseISODate(settings.dueDate);
+    const series = [
+        {
+            key: "first",
+            title: "First baby",
+            className: "metric-card-first",
+            averageDay: 275.9,
+            cdfKey: "firstCdf"
+        },
+        {
+            key: "later",
+            title: "Second or later baby",
+            className: "metric-card-later",
+            averageDay: 274.5,
+            cdfKey: "laterCdf"
+        }
+    ];
+
+    function summaryRow(label, day, detail) {
+        const roundedDay = Math.round(day);
+        return `
+            <div class="metric-row">
+                <span>${label}</span>
+                <b>${formatTableDate(dateForGestationalDay(dueDate, day))}</b>
+                <small>${gestationalLabel(roundedDay)} · ${detail}</small>
+            </div>
+        `;
+    }
+
+    timingSummaryEl.innerHTML = series.map((item) => {
+        const medianDay = percentileDayFor(rows, item.cdfKey, 50);
+        const ninetyDay = percentileDayFor(rows, item.cdfKey, 90);
+        return `
+            <article class="metric-card ${item.className}">
+                <div class="metric-card-header">
+                    <span class="metric-label">${item.title}</span>
+                    <strong class="metric-title">Typical timing</strong>
+                </div>
+                <div class="metric-list">
+                    ${summaryRow("Average", item.averageDay, `${item.averageDay.toFixed(1)} days`)}
+                    ${summaryRow("Median", medianDay, "50% born by then")}
+                    ${summaryRow("90% by", ninetyDay, "90% born by then")}
+                </div>
+            </article>
+        `;
+    }).join("");
+}
+
 function renderTable(rows) {
     tableBody.innerHTML = rows.map((row) => `
         <tr>
@@ -514,6 +569,7 @@ function renderTable(rows) {
 function render() {
     const rows = enrichData();
     tableSection.classList.toggle("is-hidden", !settings.showTable);
+    renderTimingSummary(rows);
     renderChart(rows);
     renderTable(rows);
 }

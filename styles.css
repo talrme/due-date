@@ -213,15 +213,14 @@ main {
 
 .insight-strip {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
 }
 
 .metric-card {
     position: relative;
     min-width: 0;
-    min-height: 136px;
-    padding: 18px 18px 16px;
+    padding: 16px;
     overflow: hidden;
     border: 1px solid rgba(28, 49, 68, 0.1);
     border-radius: 8px;
@@ -242,17 +241,12 @@ main {
 .metric-card::after {
     content: "";
     position: absolute;
-    right: -38px;
-    top: -24px;
-    width: 112px;
-    height: 180px;
+    right: -42px;
+    top: -52px;
+    width: 118px;
+    height: 210px;
     background: linear-gradient(180deg, rgba(42, 157, 143, 0.14), rgba(244, 162, 97, 0.08));
     transform: rotate(13deg);
-}
-
-.metric-card-date {
-    background:
-        linear-gradient(135deg, rgba(42, 157, 143, 0.15), rgba(255, 255, 255, 0.96) 52%, rgba(69, 123, 157, 0.11));
 }
 
 .metric-card-first::before {
@@ -286,29 +280,63 @@ main {
     line-height: 1;
 }
 
-.insight-strip strong {
+.metric-card-header {
+    position: relative;
+    z-index: 1;
+}
+
+.metric-title {
     display: block;
     position: relative;
     z-index: 1;
-    margin-top: 14px;
+    margin-top: 9px;
     max-width: 100%;
     color: #13213a;
-    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-size: clamp(1.2rem, 2.2vw, 1.65rem);
     line-height: 1.02;
     letter-spacing: 0;
     text-wrap: balance;
 }
 
-.metric-note {
-    display: block;
+.metric-list {
+    display: grid;
+    gap: 8px;
     position: relative;
     z-index: 1;
-    margin-top: 10px;
-    max-width: 24ch;
+    margin-top: 12px;
+}
+
+.metric-row {
+    display: grid;
+    grid-template-columns: minmax(70px, 0.7fr) minmax(124px, 1fr) minmax(116px, 0.85fr);
+    gap: 10px;
+    align-items: center;
+    min-height: 42px;
+    padding: 8px 10px;
+    border: 1px solid rgba(28, 49, 68, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.metric-row span {
     color: var(--muted);
-    font-size: 0.86rem;
+    font-size: 0.74rem;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.metric-row b {
+    color: var(--ink);
+    font-size: 0.98rem;
+    line-height: 1.1;
+}
+
+.metric-row small {
+    color: var(--muted);
+    font-size: 0.78rem;
     font-weight: 650;
-    line-height: 1.35;
+    line-height: 1.25;
 }
 
 .chart-section,
@@ -886,7 +914,22 @@ body.modal-open {
     }
 
     .metric-card {
-        min-height: 124px;
+        padding: 14px;
+    }
+
+    .metric-row {
+        grid-template-columns: 78px minmax(0, 1fr);
+        gap: 6px;
+        padding: 8px;
+    }
+
+    .metric-row b {
+        font-size: 0.92rem;
+    }
+
+    .metric-row small {
+        grid-column: 2;
+        font-size: 0.72rem;
     }
 
     .section-heading {
