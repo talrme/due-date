@@ -43,10 +43,12 @@ const SOURCE_DATA = [
 
 const STORAGE_KEY = "due-date:settings";
 const SUMMARY_PERCENTILE = 85;
+const CHART_DEFAULTS_VERSION = 2;
 const DEFAULT_SETTINGS = {
     dueDate: "2026-09-19",
     rememberDueDate: true,
-    showFirst: false,
+    chartDefaultsVersion: CHART_DEFAULTS_VERSION,
+    showFirst: true,
     showLater: true,
     showPdf: true,
     showCdf: true,
@@ -76,8 +78,27 @@ function loadSettings() {
     try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
         const merged = { ...DEFAULT_SETTINGS, ...saved };
+        const migratedChartDefaults = saved.chartDefaultsVersion !== CHART_DEFAULTS_VERSION;
+        if (migratedChartDefaults) {
+            merged.chartDefaultsVersion = CHART_DEFAULTS_VERSION;
+            merged.showFirst = true;
+            merged.showLater = true;
+            merged.showPdf = true;
+            merged.showCdf = true;
+        }
         if (!merged.rememberDueDate) {
             merged.dueDate = DEFAULT_SETTINGS.dueDate;
+        }
+        if (migratedChartDefaults) {
+            const toSave = { ...merged };
+            if (!toSave.rememberDueDate) {
+                delete toSave.dueDate;
+            }
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+            } catch (error) {
+                // Local preferences are nice to have; the chart can still run without them.
+            }
         }
         return merged;
     } catch (error) {

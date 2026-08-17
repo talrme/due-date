@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Due Date</title>
+    <meta name="theme-color" content="#2a9d8f">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -40,10 +44,10 @@
                 <div id="chart" class="chart" role="img" aria-label="Birth timing chart by gestational age"></div>
                 <div id="chart-tooltip" class="chart-tooltip" role="status" aria-live="polite"></div>
                 <div class="chart-options" aria-label="Chart display controls">
-                    <span class="chart-options-title">Show in chart</span>
+                    <span class="chart-options-title">Chart options</span>
                     <div class="chart-option-group" aria-label="Baby data">
                         <span>Data</span>
-                        <button type="button" class="toggle-chip" data-series="first">First baby</button>
+                        <button type="button" class="toggle-chip active" data-series="first">First baby</button>
                         <button type="button" class="toggle-chip active" data-series="later">Second+ baby</button>
                     </div>
                     <div class="chart-option-group" aria-label="Chart measures">
