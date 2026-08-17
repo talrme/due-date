@@ -45,7 +45,7 @@ const STORAGE_KEY = "due-date:settings";
 const DEFAULT_SETTINGS = {
     dueDate: "2026-09-19",
     rememberDueDate: true,
-    showFirst: true,
+    showFirst: false,
     showLater: true,
     showPdf: true,
     showCdf: true,
