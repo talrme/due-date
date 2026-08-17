@@ -43,7 +43,7 @@ const SOURCE_DATA = [
 
 const STORAGE_KEY = "due-date:settings";
 const DEFAULT_SETTINGS = {
-    dueDate: toISODate(new Date()),
+    dueDate: "2026-09-19",
     rememberDueDate: true,
     showFirst: true,
     showLater: true,
