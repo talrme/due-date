@@ -613,6 +613,44 @@ tbody tr:hover {
     font-weight: 850;
 }
 
+.source-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.source-section .source-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid rgba(42, 157, 143, 0.35);
+    border-radius: 8px;
+    color: var(--navy);
+    background: rgba(42, 157, 143, 0.09);
+    text-decoration: none;
+    box-shadow: 0 8px 18px rgba(20, 33, 61, 0.07);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.source-section .source-button:hover {
+    transform: translateY(-1px);
+    background: rgba(42, 157, 143, 0.14);
+    box-shadow: 0 12px 24px rgba(20, 33, 61, 0.1);
+}
+
+.source-section .source-button-primary {
+    border-color: transparent;
+    color: #fff;
+    background: var(--navy);
+}
+
+.source-section .source-button-primary:hover {
+    background: #27445e;
+}
+
 details {
     border: 1px solid #e0e8ed;
     border-radius: 8px;
@@ -841,6 +879,10 @@ body.modal-open {
     .insight-strip,
     .source-section {
         grid-template-columns: 1fr;
+    }
+
+    .source-actions {
+        display: grid;
     }
 
     .metric-card {

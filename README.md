@@ -13,6 +13,7 @@ Live locally by opening `index.html` in a browser.
 - Adds optional median and due-date reference markers on the chart
 - Renders week/day x-axis labels from 37w0d through 42w4d
 - Shows a cumulative probability table by calendar date
+- Includes a downloadable CSV of the Epic Research frequency table
 - Includes a settings modal for browser memory, table visibility, and curve style
 - Clicking the banner resets saved settings
 
