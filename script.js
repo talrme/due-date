@@ -42,6 +42,7 @@ const SOURCE_DATA = [
 ];
 
 const STORAGE_KEY = "due-date:settings";
+const SUMMARY_PERCENTILE = 85;
 const DEFAULT_SETTINGS = {
     dueDate: "2026-09-19",
     rememberDueDate: true,
@@ -160,6 +161,17 @@ function gestationalLongLabel(day) {
     const weekLabel = age.week === 1 ? "week" : "weeks";
     const dayLabel = age.day === 1 ? "day" : "days";
     return `${age.week} ${weekLabel}, ${age.day} ${dayLabel}`;
+}
+
+function gestationalPreciseLabel(day) {
+    let week = Math.floor(day / 7);
+    let dayPart = Math.round((day - week * 7) * 10) / 10;
+    if (dayPart >= 7) {
+        week += 1;
+        dayPart = 0;
+    }
+    const dayText = Number.isInteger(dayPart) ? String(dayPart) : dayPart.toFixed(1);
+    return `${week}w ${dayText}d`;
 }
 
 function enrichData() {
@@ -587,29 +599,28 @@ function renderTimingSummary(rows) {
     ];
 
     function summaryRow(label, day, detail) {
-        const roundedDay = Math.round(day);
         return `
             <div class="metric-row">
                 <span>${label}</span>
                 <b>${formatTableDate(dateForGestationalDay(dueDate, day))}</b>
-                <small>${gestationalLabel(roundedDay)} · ${detail}</small>
+                <small>${gestationalPreciseLabel(day)} · ${detail}</small>
             </div>
         `;
     }
 
     timingSummaryEl.innerHTML = series.map((item) => {
         const medianDay = percentileDayFor(rows, item.cdfKey, 50);
-        const ninetyDay = percentileDayFor(rows, item.cdfKey, 90);
+        const summaryPercentileDay = percentileDayFor(rows, item.cdfKey, SUMMARY_PERCENTILE);
         return `
             <article class="metric-card ${item.className}">
                 <div class="metric-card-header">
-                    <span class="metric-label">${item.title}</span>
-                    <strong class="metric-title">Typical timing</strong>
+                    <strong class="metric-series-title">${item.title}</strong>
+                    <span class="metric-context">Typical timing</span>
                 </div>
                 <div class="metric-list">
                     ${summaryRow("Average", item.averageDay, `${item.averageDay.toFixed(1)} days`)}
                     ${summaryRow("Median", medianDay, "50% born by then")}
-                    ${summaryRow("90% by", ninetyDay, "90% born by then")}
+                    ${summaryRow(`${SUMMARY_PERCENTILE}% by`, summaryPercentileDay, `${SUMMARY_PERCENTILE}% born by then`)}
                 </div>
             </article>
         `;

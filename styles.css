@@ -281,21 +281,25 @@ main {
 }
 
 .metric-card-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
     position: relative;
     z-index: 1;
 }
 
-.metric-title {
-    display: block;
-    position: relative;
-    z-index: 1;
-    margin-top: 9px;
-    max-width: 100%;
+.metric-series-title {
     color: #13213a;
-    font-size: clamp(1.2rem, 2.2vw, 1.65rem);
-    line-height: 1.02;
+    font-size: clamp(1.18rem, 2.2vw, 1.55rem);
+    line-height: 1.05;
     letter-spacing: 0;
-    text-wrap: balance;
+}
+
+.metric-context {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 750;
 }
 
 .metric-list {
