@@ -441,10 +441,14 @@ function renderChart(rows) {
         return `<text class="reference-label ${marker.className}" x="${x + 7}" y="${marker.labelY}">${marker.shortLabel}</text>`;
     }).join("");
 
-    const cdfLegend = settings.showCdf
+    const legendWidth = 248;
+    const legendHeight = 28;
+    const legendX = width - margin.right - legendWidth - 12;
+    const legendY = height - margin.bottom - legendHeight - 12;
+    const cdfLegend = settings.showCdf && settings.showFirst && settings.showLater
         ? `
-            <g class="cdf-legend" transform="translate(${margin.left + 92} 10)">
-                <rect class="cdf-legend-bg" x="0" y="0" width="248" height="28" rx="14"></rect>
+            <g class="cdf-legend" transform="translate(${legendX} ${legendY})">
+                <rect class="cdf-legend-bg" x="0" y="0" width="${legendWidth}" height="${legendHeight}" rx="14"></rect>
                 <g class="legend-item" transform="translate(12 14)">
                     <line class="legend-line cdf-first" x1="0" y1="0" x2="24" y2="0"></line>
                     <text class="legend-label" x="32" y="4">First baby</text>
