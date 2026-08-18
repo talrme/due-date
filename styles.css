@@ -635,6 +635,10 @@ main {
     display: block;
 }
 
+.tooltip-nav {
+    display: none;
+}
+
 .tooltip-title {
     margin-bottom: 8px;
 }
@@ -1147,6 +1151,73 @@ body.modal-open {
 
     .chart svg {
         height: 440px;
+    }
+
+    .chart-tooltip.is-pinned {
+        top: auto !important;
+        right: 12px;
+        bottom: 12px;
+        left: 12px !important;
+        width: auto;
+        max-height: min(64vh, 500px);
+        overflow-y: auto;
+        padding-top: 22px;
+        background: #1b2a48;
+        box-shadow: 0 18px 46px rgba(20, 33, 61, 0.34);
+        pointer-events: auto;
+    }
+
+    .chart-tooltip.is-pinned::before {
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        width: 42px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.32);
+        transform: translateX(-50%);
+    }
+
+    .tooltip-nav {
+        display: flex;
+        position: sticky;
+        bottom: -14px;
+        align-items: center;
+        gap: 8px;
+        margin: 12px -14px -14px;
+        padding: 10px 14px 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.14);
+        background: linear-gradient(180deg, rgba(27, 42, 72, 0.92), #1b2a48 36%);
+    }
+
+    .tooltip-nav button {
+        flex: 1;
+        min-height: 42px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.12);
+        cursor: pointer;
+        font-size: 0.86rem;
+        font-weight: 850;
+    }
+
+    .tooltip-nav button:not(:disabled):active {
+        transform: translateY(1px);
+    }
+
+    .tooltip-nav button:disabled {
+        cursor: default;
+        opacity: 0.38;
+    }
+
+    .tooltip-nav span {
+        min-width: 52px;
+        color: rgba(255, 255, 255, 0.62);
+        font-size: 0.72rem;
+        font-weight: 850;
+        text-align: center;
     }
 
     th,

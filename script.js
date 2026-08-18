@@ -73,6 +73,7 @@ const showDueDateToggle = document.getElementById("show-due-date");
 
 let settings = loadSettings();
 let selectedDay = null;
+let suppressChartClickUntil = 0;
 
 function loadSettings() {
     try {
@@ -499,8 +500,39 @@ function renderChart(rows) {
 
     const hitZones = rows.map((row, index) => {
         const x = xFor(index);
-        return `<rect class="hit-zone" data-day="${row.day}" x="${x - step / 2}" y="${margin.top}" width="${step}" height="${plotHeight + 54}"></rect>`;
+        const zoneX = index === 0 ? 0 : x - step / 2;
+        const zoneEnd = index === rows.length - 1 ? width : x + step / 2;
+        return `<rect class="hit-zone" data-day="${row.day}" x="${zoneX}" y="0" width="${zoneEnd - zoneX}" height="${height}"></rect>`;
     }).join("");
+
+    function anchorEventForRow(row) {
+        const svg = chartEl.querySelector("svg");
+        const rect = svg.getBoundingClientRect();
+        const rowIndex = rows.findIndex((item) => item.day === row.day);
+        return {
+            clientX: rect.left + xFor(rowIndex) / width * rect.width,
+            clientY: rect.top + (margin.top + plotHeight * 0.48) / height * rect.height
+        };
+    }
+
+    function rowForPointerEvent(event) {
+        const svg = chartEl.querySelector("svg");
+        const rect = svg.getBoundingClientRect();
+        const svgX = (event.clientX - rect.left) / rect.width * width;
+        const boundedX = Math.max(margin.left, Math.min(width - margin.right, svgX));
+        const rowIndex = Math.max(0, Math.min(rows.length - 1, Math.round((boundedX - margin.left) / step)));
+        return rows[rowIndex];
+    }
+
+    function selectRow(row, event) {
+        selectedDay = row.day;
+        renderChart(rows);
+        showTooltip(row, rows, event || anchorEventForRow(row), true);
+    }
+
+    function suppressSyntheticClick() {
+        suppressChartClickUntil = performance.now() + 450;
+    }
 
     chartEl.innerHTML = `
         <svg viewBox="0 0 ${width} ${height}" aria-hidden="true">
@@ -522,18 +554,69 @@ function renderChart(rows) {
         </svg>
     `;
 
-    chartEl.querySelectorAll(".hit-zone").forEach((zone) => {
-        const day = Number(zone.dataset.day);
-        const row = rows.find((item) => item.day === day);
-        zone.addEventListener("mouseenter", (event) => showTooltip(row, rows, event));
-        zone.addEventListener("mousemove", (event) => showTooltip(row, rows, event));
-        zone.addEventListener("mouseleave", hideTooltip);
-        zone.addEventListener("click", (event) => {
-            selectedDay = day;
-            renderChart(rows);
-            showTooltip(row, rows, event, true);
+    const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (supportsHover) {
+        chartEl.querySelectorAll(".hit-zone").forEach((zone) => {
+            const day = Number(zone.dataset.day);
+            const row = rows.find((item) => item.day === day);
+            zone.addEventListener("mouseenter", (event) => showTooltip(row, rows, event));
+            zone.addEventListener("mousemove", (event) => showTooltip(row, rows, event));
+            zone.addEventListener("mouseleave", hideTooltip);
         });
-    });
+    }
+
+    let chartPointerStart = null;
+    chartEl.onpointerdown = (event) => {
+        if (!event.target.closest("svg")) return;
+        chartPointerStart = {
+            x: event.clientX,
+            y: event.clientY,
+            scrollLeft: chartEl.scrollLeft
+        };
+    };
+    chartEl.onpointerup = (event) => {
+        if (!chartPointerStart || !event.target.closest("svg")) return;
+
+        const moved = Math.hypot(event.clientX - chartPointerStart.x, event.clientY - chartPointerStart.y);
+        const scrolled = Math.abs(chartEl.scrollLeft - chartPointerStart.scrollLeft);
+        chartPointerStart = null;
+        if (moved > 10 || scrolled > 6) {
+            suppressSyntheticClick();
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        suppressSyntheticClick();
+        selectRow(rowForPointerEvent(event), event);
+    };
+    chartEl.onpointercancel = () => {
+        chartPointerStart = null;
+    };
+    chartEl.onclick = (event) => {
+        if (!event.target.closest("svg")) return;
+        if (performance.now() < suppressChartClickUntil) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        selectRow(rowForPointerEvent(event), event);
+    };
+
+    tooltipEl.onclick = (event) => {
+        const button = event.target.closest("[data-tooltip-step]");
+        if (!button) return;
+
+        event.stopPropagation();
+        const currentDay = Number(tooltipEl.dataset.day || selectedDay);
+        const currentIndex = rows.findIndex((row) => row.day === currentDay);
+        if (currentIndex < 0) return;
+
+        const nextIndex = Math.max(0, Math.min(rows.length - 1, currentIndex + Number(button.dataset.tooltipStep)));
+        const nextRow = rows[nextIndex];
+        selectRow(nextRow);
+    };
 
     requestAnimationFrame(() => {
         const centerDay = selectedDay || 280;
@@ -565,6 +648,7 @@ function markerTooltipHtml(row, rows) {
 }
 
 function showTooltip(row, rows, event, persist = false) {
+    const rowIndex = rows.findIndex((item) => item.day === row.day);
     const firstHtml = settings.showFirst ? `
         <div><span>First baby</span><strong>${row.firstCdf.toFixed(1)}%</strong></div>
     ` : "";
@@ -586,6 +670,13 @@ function showTooltip(row, rows, event, persist = false) {
             </div>
         </div>
     ` : "";
+    const navHtml = persist ? `
+        <div class="tooltip-nav" aria-label="Step through chart days">
+            <button type="button" data-tooltip-step="-1" ${rowIndex <= 0 ? "disabled" : ""}>Previous</button>
+            <span>${rowIndex + 1} of ${rows.length}</span>
+            <button type="button" data-tooltip-step="1" ${rowIndex >= rows.length - 1 ? "disabled" : ""}>Next</button>
+        </div>
+    ` : "";
 
     tooltipEl.innerHTML = `
         <div class="tooltip-title">
@@ -599,11 +690,14 @@ function showTooltip(row, rows, event, persist = false) {
         </div>
         ${dailyHtml}
         ${markerTooltipHtml(row, rows)}
+        ${navHtml}
     `;
 
     tooltipEl.classList.add("is-visible");
+    tooltipEl.classList.toggle("is-pinned", persist);
     moveTooltip(event);
     tooltipEl.dataset.persist = String(persist);
+    tooltipEl.dataset.day = String(row.day);
 }
 
 function moveTooltip(event) {
@@ -626,6 +720,7 @@ function moveTooltip(event) {
 function hideTooltip() {
     if (tooltipEl.dataset.persist === "true") return;
     tooltipEl.classList.remove("is-visible");
+    tooltipEl.classList.remove("is-pinned");
 }
 
 function dateForGestationalDay(dueDate, day) {
@@ -759,6 +854,7 @@ function setupEvents() {
         if (event.key === "Escape" && settingsModal.classList.contains("active")) closeSettings();
         if (event.key === "Escape") {
             tooltipEl.classList.remove("is-visible");
+            tooltipEl.classList.remove("is-pinned");
             tooltipEl.dataset.persist = "false";
             selectedDay = null;
             render();
@@ -778,6 +874,7 @@ function setupEvents() {
     document.addEventListener("click", (event) => {
         if (!chartEl.contains(event.target) && !tooltipEl.contains(event.target)) {
             tooltipEl.classList.remove("is-visible");
+            tooltipEl.classList.remove("is-pinned");
             tooltipEl.dataset.persist = "false";
         }
     });
