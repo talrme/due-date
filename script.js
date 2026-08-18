@@ -627,6 +627,16 @@ function renderChart(rows) {
     };
 
     tooltipEl.onclick = (event) => {
+        if (event.target.closest("[data-tooltip-close]")) {
+            event.stopPropagation();
+            selectedDay = null;
+            tooltipEl.classList.remove("is-visible");
+            tooltipEl.classList.remove("is-pinned");
+            tooltipEl.dataset.persist = "false";
+            renderChart(rows);
+            return;
+        }
+
         const button = event.target.closest("[data-tooltip-step]");
         if (!button) return;
 
@@ -692,15 +702,20 @@ function showTooltip(row, rows, event, persist = false) {
             </div>
         </div>
     ` : "";
-    const navHtml = persist ? `
-        <div class="tooltip-nav" aria-label="Step through chart days">
-            <button type="button" data-tooltip-step="-1" ${rowIndex <= 0 ? "disabled" : ""}>Previous</button>
-            <span>${rowIndex + 1} of ${rows.length}</span>
-            <button type="button" data-tooltip-step="1" ${rowIndex >= rows.length - 1 ? "disabled" : ""}>Next</button>
+    const mobileHeaderHtml = persist ? `
+        <div class="tooltip-mobile-header" aria-label="Step through chart days">
+            <button type="button" class="tooltip-icon-button" data-tooltip-step="-1" aria-label="Previous day" ${rowIndex <= 0 ? "disabled" : ""}>&lsaquo;</button>
+            <div class="tooltip-mobile-date">
+                <strong>${row.dateLabel}</strong>
+                <span>${row.gestationalLongLabel}</span>
+            </div>
+            <button type="button" class="tooltip-icon-button" data-tooltip-step="1" aria-label="Next day" ${rowIndex >= rows.length - 1 ? "disabled" : ""}>&rsaquo;</button>
+            <button type="button" class="tooltip-close-button" data-tooltip-close aria-label="Close">&times;</button>
         </div>
     ` : "";
 
     tooltipEl.innerHTML = `
+        ${mobileHeaderHtml}
         <div class="tooltip-title">
             <strong>${row.dateLabel}</strong>
             <span>${row.gestationalLongLabel}</span>
@@ -712,7 +727,6 @@ function showTooltip(row, rows, event, persist = false) {
         </div>
         ${dailyHtml}
         ${markerTooltipHtml(row, rows)}
-        ${navHtml}
     `;
 
     tooltipEl.classList.add("is-visible");
