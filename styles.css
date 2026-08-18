@@ -391,6 +391,14 @@ main {
         linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 252, 252, 0.96));
 }
 
+.chart-frame {
+    position: relative;
+}
+
+.mobile-y-axis {
+    display: none;
+}
+
 .chart svg {
     display: block;
     width: 1100px;
@@ -1151,6 +1159,42 @@ body.modal-open {
 
     .chart svg {
         height: 440px;
+    }
+
+    .svg-left-axis {
+        opacity: 0;
+    }
+
+    .mobile-y-axis.is-visible {
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        z-index: 6;
+        display: block;
+        width: 62px;
+        height: 440px;
+        border-radius: 8px 0 0 8px;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.9) 70%, rgba(255, 255, 255, 0) 100%);
+        pointer-events: none;
+    }
+
+    .mobile-y-axis-line {
+        position: absolute;
+        top: 6.8%;
+        right: 0;
+        bottom: 17.2%;
+        width: 1px;
+        background: #b9c7ce;
+    }
+
+    .mobile-y-axis-label {
+        position: absolute;
+        right: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 850;
+        line-height: 1;
+        transform: translateY(-50%);
     }
 
     .chart-tooltip.is-pinned {

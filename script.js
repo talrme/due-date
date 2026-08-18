@@ -60,6 +60,7 @@ const DEFAULT_SETTINGS = {
 
 const chartEl = document.getElementById("chart");
 const tooltipEl = document.getElementById("chart-tooltip");
+const mobileAxisEl = document.getElementById("mobile-y-axis");
 const dueDateInput = document.getElementById("due-date-input");
 const timingSummaryEl = document.getElementById("timing-summary");
 const tableBody = document.getElementById("cdf-table-body");
@@ -368,12 +369,13 @@ function referenceMarkersFor(rows) {
 function renderChart(rows) {
     const width = 1100;
     const height = 500;
-    const margin = { top: 34, right: 96, bottom: 86, left: 32 };
+    const margin = { top: 34, right: 96, bottom: 86, left: 62 };
     const plotWidth = width - margin.left - margin.right;
     const plotHeight = height - margin.top - margin.bottom;
     const step = plotWidth / (rows.length - 1);
     const maxPdf = 8;
     const maxCdf = 100;
+    const cdfTicks = [0, 25, 50, 75, 100];
     const barWidth = Math.min(12, step * 0.34);
     const showTwoBars = settings.showFirst && settings.showLater;
     const selected = selectedDay ? rows.find((row) => row.day === selectedDay) : null;
@@ -389,7 +391,7 @@ function renderChart(rows) {
     }
 
     const gridMax = settings.showCdf ? maxCdf : maxPdf;
-    const gridTicks = settings.showCdf ? [0, 25, 50, 75, 100] : [0, 2, 4, 6, 8];
+    const gridTicks = settings.showCdf ? cdfTicks : [0, 2, 4, 6, 8];
     const grid = gridTicks.map((tick) => {
         const y = yFor(tick, gridMax, margin.top, plotHeight);
         return `
@@ -397,10 +399,28 @@ function renderChart(rows) {
         `;
     }).join("");
 
-    const rightAxis = settings.showCdf ? [0, 25, 50, 75, 100].map((tick) => {
+    const leftAxis = settings.showCdf ? cdfTicks.map((tick) => {
+        const y = yFor(tick, maxCdf, margin.top, plotHeight);
+        return `<text class="y-label y-label-left svg-left-axis" x="${margin.left - 12}" y="${y + 4}" text-anchor="end">${tick}%</text>`;
+    }).join("") : "";
+
+    const rightAxis = settings.showCdf ? cdfTicks.map((tick) => {
         const y = yFor(tick, maxCdf, margin.top, plotHeight);
         return `<text class="y-label" x="${width - margin.right + 12}" y="${y + 4}">${tick}%</text>`;
     }).join("") : "";
+
+    if (mobileAxisEl) {
+        const mobileAxisLabels = settings.showCdf ? cdfTicks.map((tick) => {
+            const y = yFor(tick, maxCdf, margin.top, plotHeight);
+            return `<span class="mobile-y-axis-label" style="top: ${y / height * 100}%">${tick}%</span>`;
+        }).join("") : "";
+
+        mobileAxisEl.innerHTML = settings.showCdf ? `
+            <div class="mobile-y-axis-line"></div>
+            ${mobileAxisLabels}
+        ` : "";
+        mobileAxisEl.classList.toggle("is-visible", settings.showCdf);
+    }
 
     const rightAxisTitle = settings.showCdf
         ? `<text class="axis-title" text-anchor="middle" transform="translate(${width - 22} ${margin.top + plotHeight / 2}) rotate(90)">Probability baby is born by date</text>`
@@ -537,8 +557,10 @@ function renderChart(rows) {
     chartEl.innerHTML = `
         <svg viewBox="0 0 ${width} ${height}" aria-hidden="true">
             ${grid}
+            ${leftAxis}
             ${rightAxis}
             <line class="axis-line" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
+            ${settings.showCdf ? `<line class="axis-line svg-left-axis" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}"></line>` : ""}
             ${settings.showCdf ? `<line class="axis-line" x1="${width - margin.right}" y1="${margin.top}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>` : ""}
             ${rightAxisTitle}
             ${cdfLegend}
